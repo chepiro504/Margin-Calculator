@@ -1,4 +1,1000 @@
+    <script><!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JBMargin Pro</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            600: '#1d4ed8',
+                            700: '#1d40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTML5-QRCode Scanner Library CDN -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        #reader {
+            border: none !important;
+        }
+        #reader img {
+            display: none !important;
+        }
+        #reader button {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            border: none !important;
+            margin-top: 10px !important;
+            cursor: pointer !important;
+            font-size: 0.875rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+        #reader select {
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            margin-top: 8px !important;
+            font-size: 0.875rem !important;
+        }
+        .dark #reader select {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col justify-between font-sans transition-colors duration-200">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-b-2xl shadow-xl flex-grow border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-200">
+        
+        <!-- Premium Mobile-Optimized Header -->
+        <div class="px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center justify-between w-full sm:w-auto">
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                        <span class="bg-blue-600 text-white p-1 rounded-lg text-sm">📊</span> JBMargin <span id="app-badge" class="text-[9px] tracking-wider uppercase bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">Pro v5.3</span>
+                    </h1>
+                    <p id="app-subtitle" class="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">Commercial Retail Companion</p>
+                </div>
+                
+                <!-- Quick Theme Toggle for Mobile (Moves inline on tiny displays) -->
+                <button onclick="toggleTheme()" id="theme-btn" class="sm:hidden p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 transition-all text-base border border-slate-200/50 dark:border-slate-700/50" title="Toggle System Theme">
+                    🌙
+                </button>
+            </div>
+            
+            <!-- Controls Group -->
+            <div class="flex items-center gap-1.5 justify-end w-full sm:w-auto">
+                <!-- Mode Selector (Pro vs Simple) -->
+                <select id="mode-selector" onchange="toggleAppMode()" class="bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 font-bold text-xs text-blue-700 dark:text-blue-300 py-1.5 px-2.5 rounded-xl border border-blue-200 dark:border-blue-900/50 focus:outline-none cursor-pointer shadow-sm">
+                    <option value="pro">⭐ Pro</option>
+                    <option value="simple">⚡ Simple</option>
+                </select>
+
+                <!-- Language Selector Dropdown -->
+                <select id="lang-selector" onchange="changeLanguage()" class="bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200 py-1.5 px-2 rounded-xl border border-slate-200/50 dark:border-slate-700/50 focus:outline-none cursor-pointer shadow-sm">
+                    <option value="en">🇺🇸 EN</option>
+                    <option value="es">🇪🇸 ES</option>
+                </select>
+
+                <!-- Desktop Theme Toggle -->
+                <button onclick="toggleTheme()" id="theme-btn-desktop" class="hidden sm:block p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 transition-all text-base border border-slate-200/50 dark:border-slate-700/50" title="Toggle System Theme">
+                    🌙
+                </button>
+            </div>
+        </div>
+
+        <!-- Professional User Dashboard (Hidden in Simple Mode) -->
+        <div id="pro-dashboard" class="px-6 py-3 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 flex-grow">
+                <span id="label-active-profile" class="text-xs font-semibold text-slate-400 dark:text-slate-500">Active Profile:</span>
+                <div class="relative flex-grow max-w-[180px]">
+                    <select id="user-selector" onchange="changeUser()" class="w-full bg-white dark:bg-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200 py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-sm">
+                        <!-- Dynamic Users loaded here -->
+                    </select>
+                </div>
+            </div>
+            <button onclick="addNewUser()" id="btn-add-profile" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition-all active:scale-95">
+                ➕ Add Profile
+            </button>
+        </div>
+
+        <!-- Scanner Card Container (Hidden in Simple Mode) -->
+        <div id="pro-scanner-wrapper" class="px-6 mt-4 hidden">
+            <div id="scanner-container" class="hidden bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="label-scanner-active" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Hardware Scanner Active
+                    </span>
+                    <button onclick="closeScanner()" id="btn-stop-camera" class="text-[11px] bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 px-2.5 py-1 rounded-md font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                        ✕ Stop Camera
+                    </button>
+                </div>
+                <div id="reader" class="w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"></div>
+            </div>
+        </div>
+
+        <!-- Calculator Form Body -->
+        <div class="p-6 space-y-4">
+            
+            <!-- Product Information (Hidden in Simple Mode) -->
+            <div id="pro-product-info" class="grid grid-cols-1 gap-4">
+                <!-- Product Name / Notes -->
+                <div>
+                    <label id="label-product-name" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Product Name / Identifier</label>
+                    <input type="text" id="product-name" placeholder="e.g. Domino sugar 4lb" class="w-full px-3.5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all">
+                </div>
+
+                <!-- UPC Barcode Fields -->
+                <div>
+                    <label id="label-barcode" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Barcode (UPC / EAN / ID)</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-grow">
+                            <input type="text" id="upc-field" placeholder="Scanned UPC will load here" class="w-full pl-3.5 pr-20 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-mono transition-all">
+                            <button onclick="searchUPCOnline()" id="upc-search-btn" class="absolute right-1.5 top-1.5 bottom-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 rounded-md font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 transition-colors hidden">
+                                🔍 Web
+                            </button>
+                        </div>
+                        <button onclick="startScanner()" id="btn-scan" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg flex items-center gap-1.5 font-bold text-xs shadow-sm active:scale-95 transition-transform">
+                            📷 <span id="btn-scan-text">Scan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box Cost & Quantity Grid (Always Visible) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label id="label-box-cost" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Box Cost ($)</label>
+                    <input type="number" id="box-cost" step="0.01" placeholder="0.00" class="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-lg text-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-sm animate-pulse-once">
+                </div>
+
+                <div>
+                    <label id="label-pieces" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Pieces per Box</label>
+                    <input type="number" id="pieces" placeholder="e.g. 12" class="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-lg text-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-sm">
+                </div>
+            </div>
+
+            <!-- Stock Count Integration (Hidden in Simple Mode) -->
+            <div id="pro-stock-field">
+                <label id="label-stock-level" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Initial Stock Level (Optional)</label>
+                <input type="number" id="stock-level" placeholder="Enter quantity on hand" class="w-full px-3.5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+            </div>
+
+            <!-- Extra Costs Dropdown (Hidden in Simple Mode) -->
+            <div id="pro-extra-costs" class="bg-slate-50 dark:bg-slate-800/20 rounded-xl p-3 border border-slate-200/60 dark:border-slate-800">
+                <button onclick="toggleExtraCosts()" class="w-full flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider focus:outline-none">
+                    <span id="label-extra-costs-title">⚙️ Shipping / Flat Extra Fees</span>
+                    <span id="extra-chevron" class="transition-transform duration-200">▼</span>
+                </button>
+                <div id="extra-costs-container" class="hidden mt-3 space-y-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label id="label-flat-extra" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Flat Extra Cost ($)</label>
+                            <input type="number" id="flat-extra-cost" step="0.01" placeholder="0.00" class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-md text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label id="label-extra-type" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Extra Cost Type</label>
+                            <select id="extra-cost-type" class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-md text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                                <option value="box" id="opt-apply-box">Apply to Box</option>
+                                <option value="unit" id="opt-apply-unit">Apply to Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Margin / Markup Configurator (Always Visible) -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-1.5">
+                        <span id="label-pricing-logic" class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pricing Logic:</span>
+                        <select id="pct-type" onchange="calculate()" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 font-bold px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 focus:outline-none cursor-pointer">
+                            <option value="margin" id="opt-margin">Margin %</option>
+                            <option value="markup" id="opt-markup">Markup %</option>
+                        </select>
+                    </div>
+                    <span id="margin-value" class="text-sm font-extrabold text-blue-600 dark:text-blue-400">35%</span>
+                </div>
+                <input type="range" id="margin-slider" min="1" max="99" value="35" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
+            </div>
+
+        </div>
+
+        <!-- Calculations Summary Box (Always Visible) -->
+        <div class="mx-6 mb-6 bg-slate-50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 space-y-4 shadow-inner">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <span id="label-calculated-unit" class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Calculated Unit Cost</span>
+                <span id="unit-cost-display" class="text-base font-extrabold text-slate-800 dark:text-slate-200">$0.00</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <div>
+                    <span id="label-suggested-retail" class="text-slate-900 dark:text-slate-100 font-extrabold text-sm block">Suggested Retail</span>
+                    <span id="label-auto-adjusted" class="text-slate-400 dark:text-slate-500 text-[10px] font-medium">Auto-adjusted target rate</span>
+                </div>
+                <span id="retail-price-display" class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Action Control Center -->
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="clearAll()" id="btn-clear" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex-grow text-center">
+                Clear
+            </button>
+            <button onclick="saveCurrentCalculation()" id="btn-commit" class="w-2/3 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95">
+                💾 Commit to Inventory
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Inventory Ledger Container (Hidden in Simple Mode) -->
+    <div id="pro-inventory-ledger" class="w-full max-w-md mx-auto mt-6 bg-white dark:bg-slate-900 p-6 rounded-t-2xl shadow-xl transition-colors duration-200">
+        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    📁 <span id="history-title">Default User's Stock</span> (<span id="history-count">0</span>)
+                </h2>
+                <p id="label-user-inventory-sub" class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Active User Inventory Data</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <!-- CSV Export -->
+                <button onclick="exportToCSV()" class="text-[11px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-700 flex items-center gap-1">
+                    📥 CSV
+                </button>
+                <button onclick="clearHistory()" id="btn-clear-all-hist" class="text-[11px] text-red-500 hover:text-red-700 font-bold px-2.5 py-1.5">
+                    Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- List Elements -->
+        <div id="history-list" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+            <p id="label-empty-db" class="text-xs text-slate-400 dark:text-slate-500 text-center py-6">Empty database. Log custom runs above to generate inventory.</p>
+        </div>
+    </div>
+
+    <!-- PWA Offline Note -->
+    <div id="label-footer-note" class="text-center p-4 text-[11px] text-slate-400 dark:text-slate-600 font-medium">
+        Secured Database • Sandbox Environment • Saves Locally
+    </div>
+
+    <script>
+        // DOM Inputs & Elements
+        const productNameInput = document.getElementById('product-name');
+        const upcField = document.getElementById('upc-field');
+        const upcSearchBtn = document.getElementById('upc-search-btn');
+        const boxCostInput = document.getElementById('box-cost');
+        const piecesInput = document.getElementById('pieces');
+        const stockLevelInput = document.getElementById('stock-level');
+        const flatExtraCostInput = document.getElementById('flat-extra-cost');
+        const extraCostType = document.getElementById('extra-cost-type');
+        const marginSlider = document.getElementById('margin-slider');
+        const marginValue = document.getElementById('margin-value');
+        const pctTypeSelector = document.getElementById('pct-type');
+        
+        const unitCostDisplay = document.getElementById('unit-cost-display');
+        const retailPriceDisplay = document.getElementById('retail-price-display');
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+        const historyTitle = document.getElementById('history-title');
+        const userSelector = document.getElementById('user-selector');
+        const langSelector = document.getElementById('lang-selector');
+        const modeSelector = document.getElementById('mode-selector');
+        const btnCommit = document.getElementById('btn-commit');
+        const btnClear = document.getElementById('btn-clear');
+
+        let html5QrScanner = null;
+        let currentMode = localStorage.getItem('jb_margin_mode') || 'pro';
+        
+        // --- MULTILINGUAL TRANSLATION ENGINE ---
+        const translations = {
+            en: {
+                appSubtitle: "Commercial Retail Companion",
+                activeProfile: "Active Profile:",
+                addProfile: "➕ Add Profile",
+                scannerActive: "Hardware Scanner Active",
+                stopCamera: "✕ Stop Camera",
+                prodNameLabel: "Product Name / Identifier",
+                prodNamePlaceholder: "Domino sugar 4lb",
+                barcodeLabel: "Barcode (UPC / EAN / ID)",
+                barcodePlaceholder: "Scanned UPC will load here",
+                scanBtnText: "Scan",
+                boxCostLabel: "Box Cost ($)",
+                piecesLabel: "Pieces per Box",
+                stockLevelLabel: "Initial Stock Level (Optional)",
+                stockLevelPlaceholder: "Enter quantity on hand",
+                extraCostsTitle: "⚙️ Shipping / Flat Extra Fees",
+                flatExtraLabel: "Flat Extra Cost ($)",
+                extraTypeLabel: "Extra Cost Type",
+                applyToBox: "Apply to Box",
+                applyToUnit: "Apply to Unit",
+                pricingLogicLabel: "Pricing Logic:",
+                optMargin: "Margin %",
+                optMarkup: "Markup %",
+                calculatedUnitLabel: "Calculated Unit Cost",
+                suggestedRetailLabel: "Suggested Retail",
+                autoAdjustedLabel: "Auto-adjusted target rate",
+                btnClear: "Clear",
+                btnCommit: "💾 Commit to Inventory",
+                userStockTitleSuffix: "Stock",
+                userInvSub: "Active User Inventory Data",
+                btnClearAllHist: "Clear All",
+                emptyDbText: "Empty database. Log custom runs above to generate inventory.",
+                footerNote: "Secured Database • Sandbox Environment • Saves Locally",
+                alertBoxCost: "Please complete Box Cost and Pieces configurations first.",
+                alertEmptyUser: "Enter Name of New User Profile:",
+                alertUserExists: "That profile name already exists!",
+                confirmClearHist: "Are you sure you want to clear the entire saved stock ledger for ",
+                noUPC: "No UPC",
+                unnamedProduct: "Unnamed Product",
+                boxLabel: "Box",
+                pcsLabel: "Pcs",
+                retailLabel: "Retail",
+                qtyLabel: "Qty:",
+                lookupLabel: "🔍 LookUp"
+            },
+            es: {
+                appSubtitle: "Asistente de Comercio Minorista",
+                activeProfile: "Perfil Activo:",
+                addProfile: "➕ Nuevo Perfil",
+                scannerActive: "Escáner Activo",
+                stopCamera: "✕ Detener Cámara",
+                prodNameLabel: "Nombre del Producto / Identificador",
+                prodNamePlaceholder: "Azúcar Domino 4lb",
+                barcodeLabel: "Código de Barras (UPC / EAN / ID)",
+                barcodePlaceholder: "El código escaneado aparecerá aquí",
+                scanBtnText: "Escanear",
+                boxCostLabel: "Costo de Caja ($)",
+                piecesLabel: "Piezas por Caja",
+                stockLevelLabel: "Inventario Inicial (Opcional)",
+                stockLevelPlaceholder: "Cantidad disponible",
+                extraCostsTitle: "⚙️ Envío / Tarifas Adicionales Fijas",
+                flatExtraLabel: "Costo Extra Fijo ($)",
+                extraTypeLabel: "Tipo de Costo Extra",
+                applyToBox: "Aplicar a Caja",
+                applyToUnit: "Aplicar a Unidad",
+                pricingLogicLabel: "Método de Cálculo:",
+                optMargin: "Margen %",
+                optMarkup: "Markup %",
+                calculatedUnitLabel: "Costo Unitario Calculado",
+                suggestedRetailLabel: "Precio Sugerido de Venta",
+                autoAdjustedLabel: "Tasa de destino ajustada",
+                btnClear: "Limpiar",
+                btnCommit: "💾 Guardar en Inventario",
+                userStockTitleSuffix: "Inventario",
+                userInvSub: "Datos de Inventario de Usuario Activo",
+                btnClearAllHist: "Limpiar Todo",
+                emptyDbText: "Base de datos vacía. Guarde productos arriba para generar inventario.",
+                footerNote: "Base de datos segura • Entorno local • Guarda en dispositivo",
+                alertBoxCost: "Por favor, complete primero los valores de Costo de Caja y Piezas.",
+                alertEmptyUser: "Escriba el nombre del nuevo perfil de usuario:",
+                alertUserExists: "¡Ese nombre de perfil ya existe!",
+                confirmClearHist: "¿Está seguro de que desea borrar todo el historial de inventario de ",
+                noUPC: "Sin Código",
+                unnamedProduct: "Producto Sin Nombre",
+                boxLabel: "Caja",
+                pcsLabel: "Pzas",
+                retailLabel: "Venta",
+                qtyLabel: "Cant:",
+                lookupLabel: "🔍 Buscar"
+            }
+        };
+
+        let currentLang = localStorage.getItem('jb_margin_lang') || 'en';
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            
+            // Text Content Updates
+            document.getElementById('app-subtitle').textContent = t.appSubtitle;
+            document.getElementById('label-active-profile').textContent = t.activeProfile;
+            document.getElementById('btn-add-profile').textContent = t.addProfile;
+            document.getElementById('label-scanner-active').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${t.scannerActive}`;
+            document.getElementById('btn-stop-camera').textContent = t.stopCamera;
+            document.getElementById('label-product-name').textContent = t.prodNameLabel;
+            document.getElementById('label-barcode').textContent = t.barcodeLabel;
+            document.getElementById('btn-scan-text').textContent = t.scanBtnText;
+            document.getElementById('label-box-cost').textContent = t.boxCostLabel;
+            document.getElementById('label-pieces').textContent = t.piecesLabel;
+            document.getElementById('label-stock-level').textContent = t.stockLevelLabel;
+            document.getElementById('label-extra-costs-title').textContent = t.extraCostsTitle;
+            document.getElementById('label-flat-extra').textContent = t.flatExtraLabel;
+            document.getElementById('label-extra-type').textContent = t.extraTypeLabel;
+            document.getElementById('opt-apply-box').textContent = t.applyToBox;
+            document.getElementById('opt-apply-unit').textContent = t.applyToUnit;
+            document.getElementById('label-pricing-logic').textContent = t.pricingLogicLabel;
+            document.getElementById('opt-margin').textContent = t.optMargin;
+            document.getElementById('opt-markup').textContent = t.optMarkup;
+            document.getElementById('label-calculated-unit').textContent = t.calculatedUnitLabel;
+            document.getElementById('label-suggested-retail').textContent = t.suggestedRetailLabel;
+            document.getElementById('label-auto-adjusted').textContent = t.autoAdjustedLabel;
+            btnClear.textContent = t.btnClear;
+            btnCommit.textContent = t.btnCommit;
+            document.getElementById('label-user-inventory-sub').textContent = t.userInvSub;
+            document.getElementById('btn-clear-all-hist').textContent = t.btnClearAllHist;
+            document.getElementById('label-footer-note').textContent = t.footerNote;
+
+            // Placeholder Updates
+            productNameInput.placeholder = `e.g. ${t.prodNamePlaceholder}`;
+            upcField.placeholder = t.barcodePlaceholder;
+            stockLevelInput.placeholder = t.stockLevelPlaceholder;
+
+            // Dynamic header texts
+            historyTitle.textContent = `${currentUser}'s ${t.userStockTitleSuffix}`;
+            langSelector.value = currentLang;
+
+            renderHistory();
+        }
+
+        function changeLanguage() {
+            currentLang = langSelector.value;
+            localStorage.setItem('jb_margin_lang', currentLang);
+            applyTranslations();
+        }
+
+        // --- APP MODE ENGINE (PRO vs SIMPLE) ---
+        function initAppMode() {
+            modeSelector.value = currentMode;
+            toggleAppMode(true);
+        }
+
+        function toggleAppMode(isInit = false) {
+            if (!isInit) {
+                currentMode = modeSelector.value;
+                localStorage.setItem('jb_margin_mode', currentMode);
+            }
+
+            const proElements = [
+                document.getElementById('pro-dashboard'),
+                document.getElementById('pro-scanner-wrapper'),
+                document.getElementById('pro-product-info'),
+                document.getElementById('pro-stock-field'),
+                document.getElementById('pro-extra-costs'),
+                document.getElementById('pro-inventory-ledger')
+            ];
+
+            if (currentMode === 'simple') {
+                // Hide all pro components
+                proElements.forEach(el => el.classList.add('hidden'));
+                btnCommit.classList.add('hidden');
+                btnClear.className = "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all w-full text-center";
+                document.getElementById('app-badge').textContent = "Simple v5.3";
+                closeScanner();
+            } else {
+                // Show all pro components
+                proElements.forEach(el => {
+                    if (el.id !== 'pro-scanner-wrapper') el.classList.remove('hidden');
+                });
+                btnCommit.classList.remove('hidden');
+                btnClear.className = "w-1/3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-center";
+                document.getElementById('app-badge').textContent = "Pro v5.3";
+            }
+        }
+
+        // --- PROFILE SYSTEM LOGIC ---
+        let users = JSON.parse(localStorage.getItem('jb_margin_users')) || ['Default User'];
+        let currentUser = localStorage.getItem('jb_margin_active_user') || 'Default User';
+        let savedItems = [];
+
+        function initUsers() {
+            userSelector.innerHTML = '';
+            users.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user;
+                opt.textContent = `${user}`;
+                if (user === currentUser) opt.selected = true;
+                userSelector.appendChild(opt);
+            });
+
+            savedItems = JSON.parse(localStorage.getItem(`jb_margin_history_${currentUser}`)) || [];
+            applyTranslations();
+        }
+
+        function addNewUser() {
+            const t = translations[currentLang];
+            const name = prompt(t.alertEmptyUser);
+            if (!name || name.trim() === "") return;
+            const cleanedName = name.trim();
+
+            if (users.includes(cleanedName)) {
+                alert(t.alertUserExists);
+                return;
+            }
+
+            users.push(cleanedName);
+            localStorage.setItem('jb_margin_users', JSON.stringify(users));
+            currentUser = cleanedName;
+            localStorage.setItem('jb_margin_active_user', currentUser);
+            
+            initUsers();
+        }
+
+        function changeUser() {
+            currentUser = userSelector.value;
+            localStorage.setItem('jb_margin_active_user', currentUser);
+            initUsers();
+        }
+
+        // --- EXPORT TO CSV LOGIC ---
+        function exportToCSV() {
+            if (savedItems.length === 0) {
+                alert(currentLang === 'es' ? "¡No hay inventario para exportar en este perfil!" : "There is no inventory to export under this profile!");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Product Name,UPC Code,Box Cost,Pieces per Box,Flat Extra Fee,Unit Cost,Pricing Model,Model %,Suggested Retail,Stock Count\n";
+
+            savedItems.forEach(item => {
+                const name = `"${item.name.replace(/"/g, '""')}"`;
+                const upc = `"${item.upc}"`;
+                const model = item.typeLabel || 'Margin';
+                const modelPct = item.pctVal || item.margin || 0;
+                const flatFee = item.flatFee || "0.00";
+
+                const row = [
+                    name,
+                    upc,
+                    item.boxCost,
+                    item.pieces,
+                    flatFee,
+                    item.unitCost.replace('$', ''),
+                    model,
+                    modelPct,
+                    item.retailPrice.replace('$', ''),
+                    item.stock || 0
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Inventory_${currentUser.replace(/\s+/g, '_')}_export.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- THEME ENGINE (DARK MODE) ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('jb_margin_theme');
+            const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            applyThemeState(isDark);
+        }
+
+        function applyThemeState(isDark) {
+            const themeBtnMobile = document.getElementById('theme-btn');
+            const themeBtnDesktop = document.getElementById('theme-btn-desktop');
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                themeBtnMobile.textContent = '☀️';
+                themeBtnDesktop.textContent = '☀️';
+                localStorage.setItem('jb_margin_theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeBtnMobile.textContent = '🌙';
+                themeBtnDesktop.textContent = '🌙';
+                localStorage.setItem('jb_margin_theme', 'light');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = !document.documentElement.classList.contains('dark');
+            applyThemeState(isDark);
+        }
+
+        // Extra Costs Drawer Toggle
+        function toggleExtraCosts() {
+            const container = document.getElementById('extra-costs-container');
+            const chevron = document.getElementById('extra-chevron');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                chevron.textContent = '▲';
+            } else {
+                container.classList.add('hidden');
+                chevron.textContent = '▼';
+            }
+        }
+
+        // Dynamically Show Web Search option when UPC has value
+        upcField.addEventListener('input', () => {
+            if (upcField.value.trim() !== "") {
+                upcSearchBtn.classList.remove('hidden');
+            } else {
+                upcSearchBtn.classList.add('hidden');
+            }
+        });
+
+        // Search barcodes on the web directly
+        function searchUPCOnline() {
+            const code = upcField.value.trim();
+            if (!code) return;
+            window.open(`https://www.google.com/search?q=upc+${code}`, '_blank');
+        }
+
+        // Dynamic Calculations
+        function calculate() {
+            const boxCost = parseFloat(boxCostInput.value) || 0;
+            const pieces = parseInt(piecesInput.value) || 0;
+            const flatExtra = (currentMode === 'pro') ? (parseFloat(flatExtraCostInput.value) || 0) : 0;
+            const flatType = extraCostType.value;
+
+            const pctVal = parseFloat(marginSlider.value);
+            const pctPercent = pctVal / 100;
+            const type = pctTypeSelector.value;
+
+            marginValue.textContent = `${pctVal}%`;
+
+            if (boxCost > 0 && pieces > 0) {
+                let trueCostOfBox = boxCost;
+                let addedUnitCost = 0;
+
+                if (flatExtra > 0) {
+                    if (flatType === 'box') {
+                        trueCostOfBox += flatExtra;
+                    } else {
+                        addedUnitCost = flatExtra;
+                    }
+                }
+
+                const baseUnitCost = trueCostOfBox / pieces;
+                const unitCost = baseUnitCost + addedUnitCost;
+                unitCostDisplay.textContent = `$${unitCost.toFixed(2)}`;
+
+                let retailPrice = 0;
+                if (type === 'margin') {
+                    if (pctPercent < 1) {
+                        retailPrice = unitCost / (1 - pctPercent);
+                    }
+                } else { 
+                    retailPrice = unitCost * (1 + pctPercent);
+                }
+                
+                retailPriceDisplay.textContent = `$${retailPrice.toFixed(2)}`;
+            } else {
+                unitCostDisplay.textContent = '$0.00';
+                retailPriceDisplay.textContent = '$0.00';
+            }
+        }
+
+        // Save active configuration to local storage history
+        function saveCurrentCalculation() {
+            const t = translations[currentLang];
+            const upc = upcField.value.trim() || t.noUPC;
+            const name = productNameInput.value.trim() || t.unnamedProduct;
+            const boxCost = parseFloat(boxCostInput.value) || 0;
+            const pieces = parseInt(piecesInput.value) || 0;
+            const flatFee = parseFloat(flatExtraCostInput.value) || 0;
+            const stockVal = parseInt(stockLevelInput.value) || 0;
+            const pctVal = marginSlider.value;
+            const typeLabel = pctTypeSelector.value === 'margin' ? 'Margin' : 'Markup';
+            const unitCost = unitCostDisplay.textContent;
+            const retailPrice = retailPriceDisplay.textContent;
+
+            if (boxCost <= 0 || pieces <= 0) {
+                alert(t.alertBoxCost);
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                name,
+                upc,
+                boxCost: boxCost.toFixed(2),
+                pieces,
+                flatFee: flatFee.toFixed(2),
+                stock: stockVal,
+                pctVal,
+                typeLabel,
+                unitCost,
+                retailPrice
+            };
+
+            savedItems.unshift(newItem);
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
+            
+            renderHistory();
+            clearAll();
+        }
+
+        // Quick inventory adjustment in list
+        window.adjustStock = function(itemId, amount) {
+            savedItems = savedItems.map(item => {
+                if (item.id === itemId) {
+                    let curStock = item.stock || 0;
+                    const newStock = Math.max(0, curStock + amount);
+                    return { ...item, stock: newStock };
+                }
+                return item;
+            });
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
+            renderHistory();
+        }
+
+        // Render History UI
+        function renderHistory() {
+            const t = translations[currentLang];
+            historyCount.textContent = savedItems.length;
+
+            if (savedItems.length === 0) {
+                historyList.innerHTML = `<p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6">${t.emptyDbText}</p>`;
+                return;
+            }
+
+            historyList.innerHTML = '';
+            savedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800 text-xs relative flex justify-between items-center transition-colors duration-200";
+                
+                // Fallbacks
+                const rawModelType = item.typeLabel || 'Margin';
+                const displayType = (rawModelType === 'Margin') ? t.optMargin : t.optMarkup;
+                const displayPct = item.pctVal || item.margin || 0;
+                const currentStock = item.stock || 0;
+                const extInfo = parseFloat(item.flatFee) > 0 ? ` (+ $${item.flatFee})` : '';
+
+                itemDiv.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+                            ${item.name}
+                        </div>
+                        <div class="text-slate-400 dark:text-slate-500 text-[10px] flex items-center gap-1 font-medium">
+                            UPC: <span class="font-mono text-slate-600 dark:text-slate-400 font-semibold">${item.upc}</span>
+                            ${(item.upc !== 'No UPC' && item.upc !== 'Sin Código') ? `<a href="https://www.google.com/search?q=upc+${item.upc}" target="_blank" class="text-blue-500 ml-1 font-bold">${t.lookupLabel}</a>` : ''}
+                        </div>
+                        <div class="text-slate-500 dark:text-slate-400 text-[10px]">${t.boxLabel}: $${item.boxCost}${extInfo} | ${t.pcsLabel}: ${item.pieces} | ${displayType}: ${displayPct}%</div>
+                        
+                        <!-- Stock Tracker Control Row -->
+                        <div class="flex items-center gap-2 pt-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">${t.qtyLabel}</span>
+                            <div class="flex items-center bg-slate-200/60 dark:bg-slate-800 rounded-lg px-1.5 py-0.5">
+                                <button onclick="adjustStock(${item.id}, -1)" class="px-1.5 py-0.5 font-bold hover:text-red-500 text-slate-600 dark:text-slate-400">-</button>
+                                <span class="px-2 font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">${currentStock}</span>
+                                <button onclick="adjustStock(${item.id}, 1)" class="px-1.5 py-0.5 font-bold hover:text-emerald-500 text-slate-600 dark:text-slate-400">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="text-right">
+                            <span class="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider block">${t.retailLabel}</span>
+                            <span class="text-blue-600 dark:text-blue-400 font-extrabold text-sm">${item.retailPrice}</span>
+                        </div>
+                        <button onclick="deleteItem(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 p-2 rounded-lg font-bold ml-1 transition-colors">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                historyList.appendChild(itemDiv);
+            });
+        }
+
+        // Delete item from list
+        window.deleteItem = function(id) {
+            savedItems = savedItems.filter(item => item.id !== id);
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
+            renderHistory();
+        }
+
+        // Clear All History database
+        window.clearHistory = function() {
+            const t = translations[currentLang];
+            if (confirm(`${t.confirmClearHist}${currentUser}?`)) {
+                savedItems = [];
+                localStorage.removeItem(`jb_margin_history_${currentUser}`);
+                renderHistory();
+            }
+        }
+
+        // Action: Clean up inputs
+        function clearAll() {
+            productNameInput.value = '';
+            upcField.value = '';
+            boxCostInput.value = '';
+            piecesInput.value = '';
+            stockLevelInput.value = '';
+            flatExtraCostInput.value = '';
+            marginSlider.value = 35;
+            pctTypeSelector.value = 'margin';
+            upcSearchBtn.classList.add('hidden');
+            calculate();
+            closeScanner();
+        }
+
+        // --- SCANNING ENGINE LOGIC ---
+        function startScanner() {
+            const scannerContainer = document.getElementById('scanner-container');
+            const scannerWrapper = document.getElementById('pro-scanner-wrapper');
+            
+            scannerWrapper.classList.remove('hidden');
+            scannerContainer.classList.remove('hidden');
+
+            if (!html5QrScanner) {
+                html5QrScanner = new Html5QrcodeScanner(
+                    "reader", 
+                    { 
+                        fps: 15, 
+                        qrbox: { width: 280, height: 150 },
+                        aspectRatio: 1.777778,
+                        rememberLastUsedCamera: true,
+                        supportedScanTypes: [
+                            Html5QrcodeScanType.SCAN_TYPE_CAMERA,
+                            Html5QrcodeScanType.SCAN_TYPE_FILE
+                        ]
+                    },
+                    false
+                );
+            }
+
+            html5QrScanner.render(onScanSuccess, onScanError);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            upcField.value = decodedText;
+            upcSearchBtn.classList.remove('hidden');
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+            closeScanner();
+        }
+
+        function onScanError(err) {}
+
+        function closeScanner() {
+            const scannerWrapper = document.getElementById('pro-scanner-wrapper');
+            if (html5QrScanner) {
+                html5QrScanner.clear().then(() => {
+                    document.getElementById('scanner-container').classList.add('hidden');
+                    scannerWrapper.classList.add('hidden');
+                }).catch(error => {
+                    console.error("Failed to clear scanner: ", error);
+                    document.getElementById('scanner-container').classList.add('hidden');
+                    scannerWrapper.classList.add('hidden');
+                });
+            } else {
+                document.getElementById('scanner-container').classList.add('hidden');
+                scannerWrapper.classList.add('hidden');
+            }
+        }
+
+        // Initialize events
+        boxCostInput.addEventListener('input', calculate);
+        piecesInput.addEventListener('input', calculate);
+        flatExtraCostInput.addEventListener('input', calculate);
+        extraCostType.addEventListener('change', calculate);
+        marginSlider.addEventListener('input', calculate);
+        
+        // Initial Startup Execution
+        initTheme();
+        initAppMode();
+        initUsers();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JBMargin Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        #reader { border: none !important; }
+        #reader img { display: none !important; }
+        #reader button { background-color: #1d4ed8 !important; color: white !important; padding: 10px 20px !important; border-radius: 8px !important; font-weight: 600 !important; border: none !important; margin-top: 10px !important; cursor: pointer !important; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen">
+
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-b-2xl shadow-xl pb-6">
+        <!-- ... [Keep all your existing Header/Calculator/Dashboard HTML here] ... -->
+        
+        <!-- NEW ORDER LIST SECTION -->
+        <div id="order-list-section" class="px-6 border-t border-slate-100 dark:border-slate-800 pt-6 mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white">📝 Order List</h2>
+                <div class="flex gap-2">
+                    <button onclick="startOrderScanner()" class="text-[11px] bg-blue-600 text-white px-3 py-1 rounded-lg font-bold">📷 Scan to Order</button>
+                    <button onclick="exportOrderToCSV()" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-lg font-bold">📥 CSV</button>
+                    <button onclick="clearOrderList()" class="text-[11px] bg-red-100 text-red-600 px-2 py-1 rounded-lg">🗑️</button>
+                </div>
+            </div>
+            <div id="order-list-items" class="space-y-2 max-h-40 overflow-y-auto text-xs text-slate-500 dark:text-slate-400"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- ADD THESE VARIABLES TO YOUR EXISTING SCRIPT ---
+        let orderItems = JSON.parse(localStorage.getItem(`jb_order_list_${currentUser}`)) || [];
+        window.isScanningForOrder = false;
+
+        // --- ADD THESE FUNCTIONS TO YOUR EXISTING SCRIPT ---
+        function startOrderScanner() {
+            window.isScanningForOrder = true;
+            startScanner();
+        }
+
+        // Updated existing onScanSuccess to handle routing
+        function onScanSuccess(decodedText, decodedResult) {
+            if (window.isScanningForOrder) {
+                orderItems.push({ upc: decodedText, date: new Date().toLocaleDateString() });
+                localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+                renderOrderList();
+                window.isScanningForOrder = false;
+            } else {
+                // Your existing Inventory Logic
+                upcField.value = decodedText;
+                upcSearchBtn.classList.remove('hidden');
+            }
+            closeScanner();
+        }
+
+        function renderOrderList() {
+            const listContainer = document.getElementById('order-list-items');
+            listContainer.innerHTML = orderItems.length === 0 ? "Order list empty." : "";
+            orderItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between bg-slate-50 dark:bg-slate-800 p-2 rounded";
+                div.innerHTML = `<span>${item.upc}</span> <button onclick="removeFromOrder(${index})" class="text-red-500">✕</button>`;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function removeFromOrder(index) {
+            orderItems.splice(index, 1);
+            localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+            renderOrderList();
+        }
+
+        function clearOrderList() {
+            if(confirm("Clear Order List?")) {
+                orderItems = [];
+                localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+                renderOrderList();
+            }
+        }
+
+        function exportOrderToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,UPC,Date\n" + orderItems.map(i => `${i.upc},${i.date}`).join("\n");
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Order_List_${currentUser}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize Order List on load
+        renderOrderList();
+    </script>
+</body>
+</html>
+
+
         // --- EXISTING DOM INPUTS & SETUP ---
         const productNameInput = document.getElementById('product-name');
         const upcField = document.getElementById('upc-field');
