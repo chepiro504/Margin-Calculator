@@ -894,4 +894,103 @@
         initUsers();
     </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JBMargin Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        #reader { border: none !important; }
+        #reader img { display: none !important; }
+        #reader button { background-color: #1d4ed8 !important; color: white !important; padding: 10px 20px !important; border-radius: 8px !important; font-weight: 600 !important; border: none !important; margin-top: 10px !important; cursor: pointer !important; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen">
+
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-b-2xl shadow-xl pb-6">
+        <!-- ... [Keep all your existing Header/Calculator/Dashboard HTML here] ... -->
+        
+        <!-- NEW ORDER LIST SECTION -->
+        <div id="order-list-section" class="px-6 border-t border-slate-100 dark:border-slate-800 pt-6 mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white">📝 Order List</h2>
+                <div class="flex gap-2">
+                    <button onclick="startOrderScanner()" class="text-[11px] bg-blue-600 text-white px-3 py-1 rounded-lg font-bold">📷 Scan to Order</button>
+                    <button onclick="exportOrderToCSV()" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-lg font-bold">📥 CSV</button>
+                    <button onclick="clearOrderList()" class="text-[11px] bg-red-100 text-red-600 px-2 py-1 rounded-lg">🗑️</button>
+                </div>
+            </div>
+            <div id="order-list-items" class="space-y-2 max-h-40 overflow-y-auto text-xs text-slate-500 dark:text-slate-400"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- ADD THESE VARIABLES TO YOUR EXISTING SCRIPT ---
+        let orderItems = JSON.parse(localStorage.getItem(`jb_order_list_${currentUser}`)) || [];
+        window.isScanningForOrder = false;
+
+        // --- ADD THESE FUNCTIONS TO YOUR EXISTING SCRIPT ---
+        function startOrderScanner() {
+            window.isScanningForOrder = true;
+            startScanner();
+        }
+
+        // Updated existing onScanSuccess to handle routing
+        function onScanSuccess(decodedText, decodedResult) {
+            if (window.isScanningForOrder) {
+                orderItems.push({ upc: decodedText, date: new Date().toLocaleDateString() });
+                localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+                renderOrderList();
+                window.isScanningForOrder = false;
+            } else {
+                // Your existing Inventory Logic
+                upcField.value = decodedText;
+                upcSearchBtn.classList.remove('hidden');
+            }
+            closeScanner();
+        }
+
+        function renderOrderList() {
+            const listContainer = document.getElementById('order-list-items');
+            listContainer.innerHTML = orderItems.length === 0 ? "Order list empty." : "";
+            orderItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between bg-slate-50 dark:bg-slate-800 p-2 rounded";
+                div.innerHTML = `<span>${item.upc}</span> <button onclick="removeFromOrder(${index})" class="text-red-500">✕</button>`;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function removeFromOrder(index) {
+            orderItems.splice(index, 1);
+            localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+            renderOrderList();
+        }
+
+        function clearOrderList() {
+            if(confirm("Clear Order List?")) {
+                orderItems = [];
+                localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
+                renderOrderList();
+            }
+        }
+
+        function exportOrderToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,UPC,Date\n" + orderItems.map(i => `${i.upc},${i.date}`).join("\n");
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `Order_List_${currentUser}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize Order List on load
+        renderOrderList();
+    </script>
+</body>
 </html>
+
