@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JBMargin Calculadora</title>
+    <title>JBMargin Pro</title>
     
-    <!-- Tailwind CSS CDN (with dark mode class support) -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            600: '#1d4ed8',
+                            700: '#1d40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
         }
     </script>
     
@@ -24,165 +37,335 @@
             display: none !important;
         }
         #reader button {
-            background-color: #2563eb !important;
+            background-color: #1d4ed8 !important;
             color: white !important;
-            padding: 8px 16px !important;
-            border-radius: 6px !important;
+            padding: 10px 20px !important;
+            border-radius: 8px !important;
             font-weight: 600 !important;
             border: none !important;
             margin-top: 10px !important;
             cursor: pointer !important;
+            font-size: 0.875rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
         }
         #reader select {
-            padding: 6px 12px !important;
-            border-radius: 6px !important;
-            border: 1px solid #d1d5db !important;
-            margin-top: 5px !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            margin-top: 8px !important;
+            font-size: 0.875rem !important;
         }
-        /* Dark mode overrides for scanner select elements */
         .dark #reader select {
             background-color: #1e293b !important;
-            color: #f1f5f9 !important;
+            color: #f8fafc !important;
             border-color: #334155 !important;
         }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 min-h-screen flex flex-col justify-between font-sans transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col justify-between font-sans transition-colors duration-200">
 
     <!-- Main Container -->
-    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 p-6 rounded-b-2xl shadow-md flex-grow transition-colors duration-200">
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-b-2xl shadow-xl flex-grow border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-200">
         
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b dark:border-slate-800 pb-4 mb-6">
-            <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                📊 JBMargin <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">v3.1</span>
-            </h1>
-            <!-- Dark Mode Toggle Button -->
-            <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-lg" title="Toggle Dark/Light Mode">
+        <!-- Premium Header -->
+        <div class="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="bg-blue-600 text-white p-1 rounded-lg">📊</span> JBMargin <span class="text-[10px] tracking-widest uppercase bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 px-2 py-1 rounded font-bold">Pro v5.0</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">Commercial Retail Companion</p>
+            </div>
+            
+            <!-- Dark Mode Toggle -->
+            <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 transition-all text-lg border border-slate-200/50 dark:border-slate-700/50" title="Toggle System Theme">
                 🌙
             </button>
         </div>
 
-        <!-- Scanner Interface (Hidden by Default) -->
-        <div id="scanner-container" class="hidden bg-slate-50 dark:bg-slate-850 p-4 rounded-xl mb-6 border border-slate-200 dark:border-slate-800">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Scan Barcode (UPC/EAN)</span>
-                <button onclick="closeScanner()" class="text-xs bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400 px-2 py-1 rounded-md font-bold hover:bg-red-200 dark:hover:bg-red-900/50">
-                    ✕ Close Scanner
-                </button>
+        <!-- Professional User Dashboard -->
+        <div class="px-6 py-3 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 flex-grow">
+                <span class="text-sm font-semibold text-slate-400 dark:text-slate-500">Active Profile:</span>
+                <div class="relative flex-grow max-w-[180px]">
+                    <select id="user-selector" onchange="changeUser()" class="w-full bg-white dark:bg-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200 py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm">
+                        <!-- Dynamic Users loaded here -->
+                    </select>
+                </div>
             </div>
-            <div id="reader" class="w-full overflow-hidden rounded-lg"></div>
+            <button onclick="addNewUser()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition-all active:scale-95">
+                ➕ Add Profile
+            </button>
         </div>
 
-        <!-- Calculator Form -->
-        <div class="space-y-4">
-            
-            <!-- Product Name / Notes -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">Product Name / Note (Optional)</label>
-                <input type="text" id="product-name" placeholder="e.g. Blue Pen 12ct" class="w-full px-3 py-2 border dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <!-- UPC Barcode Fields -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">Product UPC / ID</label>
-                <div class="flex gap-2">
-                    <input type="text" id="upc-field" placeholder="Scanned UPC will appear here" class="w-full px-3 py-2 border dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="startScanner()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg flex items-center gap-1 font-bold text-sm shadow active:scale-95 transition-transform">
-                        📷 <span>Scan</span>
+        <!-- Scanner Card Container -->
+        <div class="px-6 mt-4">
+            <div id="scanner-container" class="hidden bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Hardware Scanner Active
+                    </span>
+                    <button onclick="closeScanner()" class="text-[11px] bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 px-2.5 py-1 rounded-md font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                        ✕ Stop Camera
                     </button>
+                </div>
+                <div id="reader" class="w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"></div>
+            </div>
+        </div>
+
+        <!-- Calculator Form Body -->
+        <div class="p-6 space-y-4">
+            
+            <!-- Flex Grid for product identification details -->
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Product Name / Notes -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Product Name / Identifier</label>
+                    <input type="text" id="product-name" placeholder="e.g. Domino sugar 4lb" class="w-full px-3.5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all">
+                </div>
+
+                <!-- UPC Barcode Fields -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Barcode (UPC / EAN / ID)</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-grow">
+                            <input type="text" id="upc-field" placeholder="Scanned UPC will load here" class="w-full pl-3.5 pr-20 py-2 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-mono transition-all">
+                            <button onclick="searchUPCOnline()" id="upc-search-btn" class="absolute right-1.5 top-1.5 bottom-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 rounded-md font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 transition-colors hidden">
+                                🔍 Web
+                            </button>
+                        </div>
+                        <button onclick="startScanner()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg flex items-center gap-1.5 font-bold text-xs shadow-sm active:scale-95 transition-transform">
+                            📷 <span>Scan</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Box Cost -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">Box Cost ($)</label>
-                <input type="number" id="box-cost" step="0.01" placeholder="0.00" class="w-full px-4 py-2.5 border dark:border-slate-800 rounded-lg text-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            <!-- Box Cost & Quantity Grid -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Box Cost ($)</label>
+                    <input type="number" id="box-cost" step="0.01" placeholder="0.00" class="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-lg text-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Pieces per Box</label>
+                    <input type="number" id="pieces" placeholder="e.g. 12" class="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-lg text-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-sm">
+                </div>
             </div>
 
-            <!-- Pieces per Box -->
+            <!-- Stock Count Integration -->
             <div>
-                <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">Pieces per Box</label>
-                <input type="number" id="pieces" placeholder="e.g. 12" class="w-full px-4 py-2.5 border dark:border-slate-800 rounded-lg text-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Initial Stock Level (Optional)</label>
+                <input type="number" id="stock-level" placeholder="Enter quantity on hand" class="w-full px-3.5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
             </div>
 
-            <!-- Target Margin -->
+            <!-- Extra Costs Dropdown and Fields -->
+            <div class="bg-slate-50 dark:bg-slate-800/20 rounded-xl p-3 border border-slate-200/60 dark:border-slate-800">
+                <button onclick="toggleExtraCosts()" class="w-full flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider focus:outline-none">
+                    <span>⚙️ Shipping / Flat Extra Fees</span>
+                    <span id="extra-chevron" class="transition-transform duration-200">▼</span>
+                </button>
+                <div id="extra-costs-container" class="hidden mt-3 space-y-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Flat Extra Cost ($)</label>
+                            <input type="number" id="flat-extra-cost" step="0.01" placeholder="0.00" class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-md text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Extra Cost Type</label>
+                            <select id="extra-cost-type" class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-md text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                                <option value="box">Apply to Box</option>
+                                <option value="unit">Apply to Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Margin / Markup Configurator -->
             <div>
-                <div class="flex justify-between items-center mb-1">
-                    <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Target Margin (%)</label>
-                    <span id="margin-value" class="text-sm font-bold text-blue-600 dark:text-blue-400">35%</span>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pricing Logic:</span>
+                        <select id="pct-type" onchange="calculate()" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 font-bold px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 focus:outline-none cursor-pointer">
+                            <option value="margin">Margin %</option>
+                            <option value="markup">Markup %</option>
+                        </select>
+                    </div>
+                    <span id="margin-value" class="text-sm font-extrabold text-blue-600 dark:text-blue-400">35%</span>
                 </div>
                 <input type="range" id="margin-slider" min="1" max="99" value="35" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
             </div>
 
         </div>
 
-        <!-- Calculations Summary Card -->
-        <div class="mt-6 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-4">
-            <div class="flex justify-between items-center border-b dark:border-slate-800 pb-2">
-                <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Unit Cost</span>
-                <span id="unit-cost-display" class="text-lg font-bold text-slate-800 dark:text-slate-200">$0.00</span>
+        <!-- Calculations Summary Box -->
+        <div class="mx-6 mb-6 bg-slate-50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 space-y-4 shadow-inner">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <span class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Calculated Unit Cost</span>
+                <span id="unit-cost-display" class="text-base font-extrabold text-slate-800 dark:text-slate-200">$0.00</span>
             </div>
 
             <div class="flex justify-between items-center">
                 <div>
-                    <span class="text-slate-800 dark:text-slate-200 font-bold text-sm block">Suggested Retail</span>
-                    <span class="text-slate-400 dark:text-slate-500 text-xs font-normal">Selling price with chosen margin</span>
+                    <span class="text-slate-900 dark:text-slate-100 font-extrabold text-sm block">Suggested Retail</span>
+                    <span class="text-slate-400 dark:text-slate-500 text-[10px] font-medium">Auto-adjusted target rate</span>
                 </div>
                 <span id="retail-price-display" class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">$0.00</span>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-5 flex gap-3">
-            <button onclick="clearAll()" class="w-1/3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-lg font-bold text-sm transition-colors">
+        <!-- Action Control Center -->
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="clearAll()" class="w-1/3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors">
                 Clear
             </button>
-            <button onclick="saveCurrentCalculation()" class="w-2/3 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold text-sm shadow transition-all active:scale-95">
-                💾 Save to History
+            <button onclick="saveCurrentCalculation()" class="w-2/3 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95">
+                💾 Commit to Inventory
             </button>
         </div>
 
     </div>
 
-    <!-- Saved History List Container -->
-    <div class="w-full max-w-md mx-auto mt-6 bg-white dark:bg-slate-900 p-6 rounded-t-2xl shadow-md transition-colors duration-200">
-        <div class="flex justify-between items-center border-b dark:border-slate-800 pb-3 mb-4">
-            <h2 class="text-md font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                📁 Saved History (<span id="history-count">0</span>)
-            </h2>
-            <button onclick="clearHistory()" class="text-xs text-red-500 hover:text-red-700 font-bold">
-                Clear History
-            </button>
+    <!-- Inventory Ledger Container -->
+    <div class="w-full max-w-md mx-auto mt-6 bg-white dark:bg-slate-900 p-6 rounded-t-2xl shadow-xl transition-colors duration-200">
+        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <div>
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    📁 <span id="history-title">Default User's Stock</span> (<span id="history-count">0</span>)
+                </h2>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Active User Inventory Data</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <!-- CSV Export -->
+                <button onclick="exportToCSV()" class="text-[11px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-700 flex items-center gap-1">
+                    📥 CSV
+                </button>
+                <button onclick="clearHistory()" class="text-[11px] text-red-500 hover:text-red-700 font-bold px-2.5 py-1.5">
+                    Clear All
+                </button>
+            </div>
         </div>
 
         <!-- List Elements -->
-        <div id="history-list" class="space-y-3 max-h-60 overflow-y-auto pr-1">
-            <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">No saved products yet. Scan and save to build a list.</p>
+        <div id="history-list" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6">Empty database. Log custom runs above to generate inventory.</p>
         </div>
     </div>
 
     <!-- PWA Offline Note -->
-    <div class="text-center p-4 text-xs text-slate-400 dark:text-slate-600">
-        Offline Ready • Auto-Saves Locally
+    <div class="text-center p-4 text-[11px] text-slate-400 dark:text-slate-600 font-medium">
+        Secured Database • Sandbox Environment • Saves Locally
     </div>
 
     <script>
         const productNameInput = document.getElementById('product-name');
         const upcField = document.getElementById('upc-field');
+        const upcSearchBtn = document.getElementById('upc-search-btn');
         const boxCostInput = document.getElementById('box-cost');
         const piecesInput = document.getElementById('pieces');
+        const stockLevelInput = document.getElementById('stock-level');
+        const flatExtraCostInput = document.getElementById('flat-extra-cost');
+        const extraCostType = document.getElementById('extra-cost-type');
         const marginSlider = document.getElementById('margin-slider');
         const marginValue = document.getElementById('margin-value');
+        const pctTypeSelector = document.getElementById('pct-type');
         
         const unitCostDisplay = document.getElementById('unit-cost-display');
         const retailPriceDisplay = document.getElementById('retail-price-display');
         const historyList = document.getElementById('history-list');
         const historyCount = document.getElementById('history-count');
+        const historyTitle = document.getElementById('history-title');
         const themeBtn = document.getElementById('theme-btn');
+        const userSelector = document.getElementById('user-selector');
 
         let html5QrScanner = null;
-        let savedItems = JSON.parse(localStorage.getItem('jb_margin_history')) || [];
+        
+        // --- PROFILE SYSTEM LOGIC ---
+        let users = JSON.parse(localStorage.getItem('jb_margin_users')) || ['Default User'];
+        let currentUser = localStorage.getItem('jb_margin_active_user') || 'Default User';
+        let savedItems = [];
+
+        function initUsers() {
+            userSelector.innerHTML = '';
+            users.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user;
+                opt.textContent = `${user}`;
+                if (user === currentUser) opt.selected = true;
+                userSelector.appendChild(opt);
+            });
+
+            savedItems = JSON.parse(localStorage.getItem(`jb_margin_history_${currentUser}`)) || [];
+            historyTitle.textContent = `${currentUser}'s Stock`;
+            renderHistory();
+        }
+
+        function addNewUser() {
+            const name = prompt("Enter Name of New User Profile:");
+            if (!name || name.trim() === "") return;
+            const cleanedName = name.trim();
+
+            if (users.includes(cleanedName)) {
+                alert("That profile name already exists!");
+                return;
+            }
+
+            users.push(cleanedName);
+            localStorage.setItem('jb_margin_users', JSON.stringify(users));
+            currentUser = cleanedName;
+            localStorage.setItem('jb_margin_active_user', currentUser);
+            
+            initUsers();
+        }
+
+        function changeUser() {
+            currentUser = userSelector.value;
+            localStorage.setItem('jb_margin_active_user', currentUser);
+            initUsers();
+        }
+
+        // --- EXPORT TO CSV LOGIC ---
+        function exportToCSV() {
+            if (savedItems.length === 0) {
+                alert("There is no inventory to export under this profile!");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Product Name,UPC Code,Box Cost,Pieces per Box,Flat Extra Fee,Unit Cost,Pricing Model,Model %,Suggested Retail,Stock Count\n";
+
+            savedItems.forEach(item => {
+                const name = `"${item.name.replace(/"/g, '""')}"`;
+                const upc = `"${item.upc}"`;
+                const model = item.typeLabel || 'Margin';
+                const modelPct = item.pctVal || item.margin || 0;
+                const flatFee = item.flatFee || "0.00";
+
+                const row = [
+                    name,
+                    upc,
+                    item.boxCost,
+                    item.pieces,
+                    flatFee,
+                    item.unitCost.replace('$', ''),
+                    model,
+                    modelPct,
+                    item.retailPrice.replace('$', ''),
+                    item.stock || 0
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Inventory_${currentUser.replace(/\s+/g, '_')}_export.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         // --- THEME ENGINE (DARK MODE) ---
         function initTheme() {
@@ -208,24 +391,75 @@
             }
         }
 
+        // Extra Costs Drawer Toggle
+        function toggleExtraCosts() {
+            const container = document.getElementById('extra-costs-container');
+            const chevron = document.getElementById('extra-chevron');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                chevron.textContent = '▲';
+            } else {
+                container.classList.add('hidden');
+                chevron.textContent = '▼';
+            }
+        }
+
+        // Dynamically Show Web Search option when UPC has value
+        upcField.addEventListener('input', () => {
+            if (upcField.value.trim() !== "") {
+                upcSearchBtn.classList.remove('hidden');
+            } else {
+                upcSearchBtn.classList.add('hidden');
+            }
+        });
+
+        // Search barcodes on the web directly
+        function searchUPCOnline() {
+            const code = upcField.value.trim();
+            if (!code) return;
+            // Open a standard google query for the barcode
+            window.open(`https://www.google.com/search?q=upc+${code}`, '_blank');
+        }
+
         // Dynamic Calculations
         function calculate() {
             const boxCost = parseFloat(boxCostInput.value) || 0;
             const pieces = parseInt(piecesInput.value) || 0;
-            const marginPercent = parseFloat(marginSlider.value) / 100;
+            const flatExtra = parseFloat(flatExtraCostInput.value) || 0;
+            const flatType = extraCostType.value;
 
-            marginValue.textContent = `${marginSlider.value}%`;
+            const pctVal = parseFloat(marginSlider.value);
+            const pctPercent = pctVal / 100;
+            const type = pctTypeSelector.value;
+
+            marginValue.textContent = `${pctVal}%`;
 
             if (boxCost > 0 && pieces > 0) {
-                const unitCost = boxCost / pieces;
+                let trueCostOfBox = boxCost;
+                let addedUnitCost = 0;
+
+                if (flatExtra > 0) {
+                    if (flatType === 'box') {
+                        trueCostOfBox += flatExtra;
+                    } else {
+                        addedUnitCost = flatExtra;
+                    }
+                }
+
+                const baseUnitCost = trueCostOfBox / pieces;
+                const unitCost = baseUnitCost + addedUnitCost;
                 unitCostDisplay.textContent = `$${unitCost.toFixed(2)}`;
 
-                if (marginPercent < 1) {
-                    const retailPrice = unitCost / (1 - marginPercent);
-                    retailPriceDisplay.textContent = `$${retailPrice.toFixed(2)}`;
-                } else {
-                    retailPriceDisplay.textContent = '$0.00';
+                let retailPrice = 0;
+                if (type === 'margin') {
+                    if (pctPercent < 1) {
+                        retailPrice = unitCost / (1 - pctPercent);
+                    }
+                } else { 
+                    retailPrice = unitCost * (1 + pctPercent);
                 }
+                
+                retailPriceDisplay.textContent = `$${retailPrice.toFixed(2)}`;
             } else {
                 unitCostDisplay.textContent = '$0.00';
                 retailPriceDisplay.textContent = '$0.00';
@@ -238,12 +472,15 @@
             const name = productNameInput.value.trim() || "Unnamed Product";
             const boxCost = parseFloat(boxCostInput.value) || 0;
             const pieces = parseInt(piecesInput.value) || 0;
-            const margin = marginSlider.value;
+            const flatFee = parseFloat(flatExtraCostInput.value) || 0;
+            const stockVal = parseInt(stockLevelInput.value) || 0;
+            const pctVal = marginSlider.value;
+            const typeLabel = pctTypeSelector.value === 'margin' ? 'Margin' : 'Markup';
             const unitCost = unitCostDisplay.textContent;
             const retailPrice = retailPriceDisplay.textContent;
 
             if (boxCost <= 0 || pieces <= 0) {
-                alert("Please enter a valid Box Cost and Pieces count before saving.");
+                alert("Please complete Box Cost and Pieces configurations first.");
                 return;
             }
 
@@ -253,23 +490,33 @@
                 upc,
                 boxCost: boxCost.toFixed(2),
                 pieces,
-                margin,
+                flatFee: flatFee.toFixed(2),
+                stock: stockVal,
+                pctVal,
+                typeLabel,
                 unitCost,
                 retailPrice
             };
 
-            savedItems.unshift(newItem); // Adds new items to top of list
-            localStorage.setItem('jb_margin_history', JSON.stringify(savedItems));
+            savedItems.unshift(newItem);
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
             
             renderHistory();
-            
-            // Clear inputs to prep for next item
-            productNameInput.value = '';
-            upcField.value = '';
-            boxCostInput.value = '';
-            piecesInput.value = '';
-            marginSlider.value = 35;
-            calculate();
+            clearAll();
+        }
+
+        // Quick inventory adjustment in list
+        window.adjustStock = function(itemId, amount) {
+            savedItems = savedItems.map(item => {
+                if (item.id === itemId) {
+                    let curStock = item.stock || 0;
+                    const newStock = Math.max(0, curStock + amount);
+                    return { ...item, stock: newStock };
+                }
+                return item;
+            });
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
+            renderHistory();
         }
 
         // Render History List UI
@@ -277,26 +524,47 @@
             historyCount.textContent = savedItems.length;
 
             if (savedItems.length === 0) {
-                historyList.innerHTML = `<p class="text-xs text-slate-400 dark:text-slate-500 text-center py-4">No saved products yet. Scan and save to build a list.</p>`;
+                historyList.innerHTML = `<p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6">Empty database. Log custom runs above to generate inventory.</p>`;
                 return;
             }
 
             historyList.innerHTML = '';
             savedItems.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = "bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs relative flex justify-between items-center transition-colors duration-200";
+                itemDiv.className = "bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800 text-xs relative flex justify-between items-center transition-colors duration-200";
+                
+                const displayType = item.typeLabel || 'Margin';
+                const displayPct = item.pctVal || item.margin || 0;
+                const currentStock = item.stock || 0;
+                const extInfo = parseFloat(item.flatFee) > 0 ? ` (+ $${item.flatFee} fee)` : '';
+
                 itemDiv.innerHTML = `
-                    <div class="space-y-0.5">
-                        <div class="font-bold text-slate-800 dark:text-slate-200 text-sm">${item.name}</div>
-                        <div class="text-slate-400 dark:text-slate-500 text-[10px]">UPC: <span class="font-mono text-slate-600 dark:text-slate-400">${item.upc}</span></div>
-                        <div class="text-slate-500 dark:text-slate-400">Box Cost: $${item.boxCost} | Pcs: ${item.pieces} | Margin: ${item.margin}%</div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                            <span class="text-slate-400 dark:text-slate-500 text-[10px] block">Retail price</span>
-                            <span class="text-blue-600 dark:text-blue-400 font-bold text-sm">${item.retailPrice}</span>
+                    <div class="space-y-1">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+                            ${item.name}
                         </div>
-                        <button onclick="deleteItem(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-950/20 p-1.5 rounded-full font-bold ml-2">
+                        <div class="text-slate-400 dark:text-slate-500 text-[10px] flex items-center gap-1 font-medium">
+                            UPC: <span class="font-mono text-slate-600 dark:text-slate-400 font-semibold">${item.upc}</span>
+                            ${item.upc !== 'No UPC' ? `<a href="https://www.google.com/search?q=upc+${item.upc}" target="_blank" class="text-blue-500 ml-1">🔍 LookUp</a>` : ''}
+                        </div>
+                        <div class="text-slate-500 dark:text-slate-400 text-[10px]">Box: $${item.boxCost}${extInfo} | Pcs: ${item.pieces} | ${displayType}: ${displayPct}%</div>
+                        
+                        <!-- Stock Tracker Control Row -->
+                        <div class="flex items-center gap-2 pt-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Qty:</span>
+                            <div class="flex items-center bg-slate-200/60 dark:bg-slate-800 rounded-lg px-1.5 py-0.5">
+                                <button onclick="adjustStock(${item.id}, -1)" class="px-1.5 py-0.5 font-bold hover:text-red-500 text-slate-600 dark:text-slate-400">-</button>
+                                <span class="px-2 font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">${currentStock}</span>
+                                <button onclick="adjustStock(${item.id}, 1)" class="px-1.5 py-0.5 font-bold hover:text-emerald-500 text-slate-600 dark:text-slate-400">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="text-right">
+                            <span class="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider block">Retail</span>
+                            <span class="text-blue-600 dark:text-blue-400 font-extrabold text-sm">${item.retailPrice}</span>
+                        </div>
+                        <button onclick="deleteItem(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 p-2 rounded-lg font-bold ml-1 transition-colors">
                             🗑️
                         </button>
                     </div>
@@ -308,15 +576,15 @@
         // Delete item from list
         window.deleteItem = function(id) {
             savedItems = savedItems.filter(item => item.id !== id);
-            localStorage.setItem('jb_margin_history', JSON.stringify(savedItems));
+            localStorage.setItem(`jb_margin_history_${currentUser}`, JSON.stringify(savedItems));
             renderHistory();
         }
 
         // Clear All History database
         window.clearHistory = function() {
-            if (confirm("Are you sure you want to clear your entire saved scan history?")) {
+            if (confirm(`Are you sure you want to clear the entire saved stock ledger for ${currentUser}?`)) {
                 savedItems = [];
-                localStorage.removeItem('jb_margin_history');
+                localStorage.removeItem(`jb_margin_history_${currentUser}`);
                 renderHistory();
             }
         }
@@ -327,7 +595,11 @@
             upcField.value = '';
             boxCostInput.value = '';
             piecesInput.value = '';
+            stockLevelInput.value = '';
+            flatExtraCostInput.value = '';
             marginSlider.value = 35;
+            pctTypeSelector.value = 'margin';
+            upcSearchBtn.classList.add('hidden');
             calculate();
             closeScanner();
         }
@@ -359,6 +631,7 @@
 
         function onScanSuccess(decodedText, decodedResult) {
             upcField.value = decodedText;
+            upcSearchBtn.classList.remove('hidden');
             if (navigator.vibrate) {
                 navigator.vibrate(100);
             }
@@ -380,14 +653,16 @@
             }
         }
 
-        // Initialize lists and events
+        // Initialize events
         boxCostInput.addEventListener('input', calculate);
         piecesInput.addEventListener('input', calculate);
+        flatExtraCostInput.addEventListener('input', calculate);
+        extraCostType.addEventListener('change', calculate);
         marginSlider.addEventListener('input', calculate);
         
-        // Initial Theme and History Render on Load
+        // Initial Startup Execution
         initTheme();
-        renderHistory();
+        initUsers();
     </script>
 </body>
 </html>
