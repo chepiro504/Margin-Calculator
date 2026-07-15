@@ -1,77 +1,69 @@
-<!DOCTYPE html>
-<html lang="en" class="">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JBMargin Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        #reader { border: none !important; }
-        #reader img { display: none !important; }
-        #reader button { background-color: #1d4ed8 !important; color: white !important; padding: 10px 20px !important; border-radius: 8px !important; font-weight: 600 !important; border: none !important; margin-top: 10px !important; cursor: pointer !important; }
-    </style>
-</head>
-<body class="bg-slate-50 dark:bg-slate-950 min-h-screen">
-
-    <div class="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-b-2xl shadow-xl pb-6">
-        <!-- Dashboard Placeholder -->
-        <div class="p-6">
-            <h1 class="text-xl font-bold dark:text-white">JBMargin Pro</h1>
-        </div>
-
-        <!-- ORDER LIST SECTION -->
-        <div id="order-list-section" class="px-6 border-t border-slate-100 dark:border-slate-800 pt-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-bold text-slate-900 dark:text-white">📝 Order List</h2>
-                <div class="flex gap-2">
-                    <button onclick="startOrderScanner()" class="text-[11px] bg-blue-600 text-white px-3 py-1 rounded-lg font-bold">📷 Scan Continuous</button>
-                    <button onclick="exportOrderToCSV()" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-lg font-bold">📥 CSV</button>
-                    <button onclick="clearOrderList()" class="text-[11px] bg-red-100 text-red-600 px-2 py-1 rounded-lg">🗑️</button>
-                </div>
-            </div>
-            <div id="scanner-container" class="hidden mb-4">
-                <div id="reader" class="w-full"></div>
-                <button onclick="closeScanner()" class="w-full mt-2 bg-red-600 text-white py-2 rounded-lg font-bold">✕ Stop Scanner</button>
-            </div>
-            <div id="order-list-items" class="space-y-2 max-h-40 overflow-y-auto text-xs text-slate-500 dark:text-slate-400"></div>
-        </div>
-    </div>
-
     <script>
-        // Setup Variables
+        // --- EXISTING DOM INPUTS & SETUP ---
+        const productNameInput = document.getElementById('product-name');
+        const upcField = document.getElementById('upc-field');
+        const upcSearchBtn = document.getElementById('upc-search-btn');
+        const boxCostInput = document.getElementById('box-cost');
+        const piecesInput = document.getElementById('pieces');
+        const stockLevelInput = document.getElementById('stock-level');
+        const flatExtraCostInput = document.getElementById('flat-extra-cost');
+        const extraCostType = document.getElementById('extra-cost-type');
+        const marginSlider = document.getElementById('margin-slider');
+        const marginValue = document.getElementById('margin-value');
+        const pctTypeSelector = document.getElementById('pct-type');
+        const unitCostDisplay = document.getElementById('unit-cost-display');
+        const retailPriceDisplay = document.getElementById('retail-price-display');
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+        const historyTitle = document.getElementById('history-title');
+        const userSelector = document.getElementById('user-selector');
+        const langSelector = document.getElementById('lang-selector');
+        const modeSelector = document.getElementById('mode-selector');
+        const btnCommit = document.getElementById('btn-commit');
+        const btnClear = document.getElementById('btn-clear');
+
+        let html5QrScanner = null;
+        let currentMode = localStorage.getItem('jb_margin_mode') || 'pro';
+        
+        // --- ORDER LIST STATE ---
         let currentUser = localStorage.getItem('jb_margin_active_user') || 'Default User';
         let orderItems = JSON.parse(localStorage.getItem(`jb_order_list_${currentUser}`)) || [];
         window.isScanningForOrder = false;
-        let html5QrScanner = null;
 
-        function startOrderScanner() {
-            window.isScanningForOrder = true;
-            document.getElementById('scanner-container').classList.remove('hidden');
-            if (!html5QrScanner) {
-                html5QrScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false);
-            }
-            html5QrScanner.render(onScanSuccess, (err) => {});
-        }
-
+        // --- UPDATED SCANNER LOGIC ---
         function onScanSuccess(decodedText, decodedResult) {
             if (window.isScanningForOrder) {
+                // ADD TO ORDER LIST
                 orderItems.push({ upc: decodedText, date: new Date().toLocaleTimeString() });
                 localStorage.setItem(`jb_order_list_${currentUser}`, JSON.stringify(orderItems));
                 renderOrderList();
-                if (navigator.vibrate) navigator.vibrate(200);
+                if (navigator.vibrate) navigator.vibrate(200); // Feedback
+                // DO NOT closeScanner() here, keeping camera active
             } else {
-                // Standard logic here
+                // STANDARD INVENTORY LOGIC
+                upcField.value = decodedText;
+                upcSearchBtn.classList.remove('hidden');
                 closeScanner();
             }
         }
 
-        function closeScanner() {
-            window.isScanningForOrder = false;
-            document.getElementById('scanner-container').classList.add('hidden');
-            if (html5QrScanner) html5QrScanner.clear();
+        function startOrderScanner() {
+            window.isScanningForOrder = true;
+            startScanner();
         }
 
+        function closeScanner() {
+            window.isScanningForOrder = false; // Reset state
+            const scannerWrapper = document.getElementById('pro-scanner-wrapper');
+            if (html5QrScanner) {
+                html5QrScanner.clear().then(() => {
+                    document.getElementById('scanner-container').classList.add('hidden');
+                    scannerWrapper.classList.add('hidden');
+                }).catch(err => console.error(err));
+            }
+        }
+
+        // --- ORDER LIST UI ---
         function renderOrderList() {
             const listContainer = document.getElementById('order-list-items');
             listContainer.innerHTML = orderItems.length === 0 ? "Order list empty." : "";
@@ -107,7 +99,12 @@
             document.body.removeChild(link);
         }
 
+        // --- RETAIN ALL YOUR PREVIOUS FUNCTIONS (initUsers, calculate, etc.) HERE ---
+        // ... (Keep all your existing translation and calculation functions here)
+
+        // Initialization
+        initTheme();
+        initAppMode();
+        initUsers();
         renderOrderList();
     </script>
-</body>
-</html>
