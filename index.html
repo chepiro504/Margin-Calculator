@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JBMargin Calculadora</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTML5-QRCode Scanner Library CDN -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        /* Custom Styles for styling the camera viewfinder to fit nicely */
+        #reader {
+            border: none !important;
+        }
+        #reader img {
+            display: none !important; /* Hide unnecessary icons in the scanner library */
+        }
+        #reader button {
+            background-color: #2563eb !important;
+            color: white !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            border: none !important;
+            margin-top: 10px !important;
+            cursor: pointer !important;
+        }
+        #reader select {
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            border: 1px solid #d1d5db !important;
+            margin-top: 5px !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md mx-auto bg-white p-6 rounded-b-2xl shadow-md flex-grow">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b pb-4 mb-6">
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                📊 JBMargin <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Calculadora v2</span>
+            </h1>
+        </div>
+
+        <!-- UPC Barcode Scanner Interactive Area (Hidden by default) -->
+        <div id="scanner-container" class="hidden bg-slate-50 p-4 rounded-xl mb-6 border border-slate-200">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold text-slate-700">Scan Barcode (UPC/EAN)</span>
+                <button onclick="closeScanner()" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold hover:bg-red-200">
+                    ✕ Close Scanner
+                </button>
+            </div>
+            <!-- Viewfinder destination -->
+            <div id="reader" class="w-full overflow-hidden rounded-lg"></div>
+        </div>
+
+        <!-- Form Inputs -->
+        <div class="space-y-4">
+            
+            <!-- Optional: Scanned UPC Display -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-600 mb-1">Product UPC / ID</label>
+                <input type="text" id="upc-field" placeholder="Scanned UPC will appear here" class="w-full px-3 py-2 border rounded-lg bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Box Cost input with Scanner Shortcut -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-600 mb-1">Box Cost ($)</label>
+                <div class="flex gap-2">
+                    <input type="number" id="box-cost" step="0.01" placeholder="0.00" class="w-full px-4 py-2.5 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                    <!-- Scan Trigger Button -->
+                    <button onclick="startScanner()" class="bg-blue-600 text-white px-4 rounded-lg flex items-center gap-1 font-bold text-sm shadow hover:bg-blue-700 active:scale-95 transition-transform">
+                        📷 <span class="hidden sm:inline">Scan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pieces per Box -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-600 mb-1">Pieces per Box</label>
+                <input type="number" id="pieces" placeholder="e.g. 12" class="w-full px-4 py-2.5 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            </div>
+
+            <!-- Desired Margin -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-semibold text-slate-600">Target Margin (%)</label>
+                    <span id="margin-value" class="text-sm font-bold text-blue-600">35%</span>
+                </div>
+                <input type="range" id="margin-slider" min="1" max="99" value="35" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+            </div>
+
+        </div>
+
+        <!-- Calculations Card -->
+        <div class="mt-6 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+            
+            <!-- Unit Cost -->
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="text-slate-500 text-sm font-medium">Unit Cost</span>
+                <span id="unit-cost-display" class="text-lg font-bold text-slate-800">$0.00</span>
+            </div>
+
+            <!-- Suggested Retail Price (Dynamic calculation based on margin) -->
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="text-slate-800 font-bold text-sm block">Suggested Retail</span>
+                    <span class="text-slate-400 text-xs font-normal">Selling price with chosen margin</span>
+                </div>
+                <span id="retail-price-display" class="text-3xl font-extrabold text-blue-600">$0.00</span>
+            </div>
+
+        </div>
+
+        <!-- Quick Clear Button -->
+        <button onclick="clearAll()" class="w-full mt-5 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-lg font-bold text-sm transition-colors">
+            Clear Fields
+        </button>
+
+    </div>
+
+    <!-- PWA Offline Note -->
+    <div class="text-center p-4 text-xs text-slate-400">
+        Offline Ready • Instant Price Margins
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // DOM Element Selectors
+        const upcField = document.getElementById('upc-field');
+        const boxCostInput = document.getElementById('box-cost');
+        const piecesInput = document.getElementById('pieces');
+        const marginSlider = document.getElementById('margin-slider');
+        const marginValue = document.getElementById('margin-value');
+        
+        const unitCostDisplay = document.getElementById('unit-cost-display');
+        const retailPriceDisplay = document.getElementById('retail-price-display');
+
+        let html5QrScanner = null;
+
+        // Dynamic Calculations
+        function calculate() {
+            const boxCost = parseFloat(boxCostInput.value) || 0;
+            const pieces = parseInt(piecesInput.value) || 0;
+            const marginPercent = parseFloat(marginSlider.value) / 100;
+
+            // 1. Target Margin Label Update
+            marginValue.textContent = `${marginSlider.value}%`;
+
+            if (boxCost > 0 && pieces > 0) {
+                // 2. Base Cost per piece
+                const unitCost = boxCost / pieces;
+                unitCostDisplay.textContent = `$${unitCost.toFixed(2)}`;
+
+                // 3. Margin Pricing Formula: Retail = Unit Cost / (1 - Margin%)
+                if (marginPercent < 1) {
+                    const retailPrice = unitCost / (1 - marginPercent);
+                    retailPriceDisplay.textContent = `$${retailPrice.toFixed(2)}`;
+                } else {
+                    retailPriceDisplay.textContent = '$0.00';
+                }
+            } else {
+                unitCostDisplay.textContent = '$0.00';
+                retailPriceDisplay.textContent = '$0.00';
+            }
+        }
+
+        // Action: Clean up inputs
+        function clearAll() {
+            upcField.value = '';
+            boxCostInput.value = '';
+            piecesInput.value = '';
+            marginSlider.value = 35;
+            calculate();
+            closeScanner();
+        }
+
+        // --- SCANNING ENGINE LOGIC ---
+
+        function startScanner() {
+            // Show scanning area element
+            const scannerContainer = document.getElementById('scanner-container');
+            scannerContainer.classList.remove('hidden');
+
+            // Initialize library instance
+            if (!html5QrScanner) {
+                html5QrScanner = new Html5QrcodeScanner(
+                    "reader", 
+                    { 
+                        fps: 15, 
+                        qrbox: { width: 280, height: 150 }, // Optimized rectangle shape for horizontal 1D barcodes
+                        aspectRatio: 1.777778,
+                        rememberLastUsedCamera: true,
+                        // Includes both active live camera and the "take/upload snapshot file" option
+                        supportedScanTypes: [
+                            Html5QrcodeScanType.SCAN_TYPE_CAMERA,
+                            Html5QrcodeScanType.SCAN_TYPE_FILE
+                        ]
+                    },
+                    /* verbose= */ false
+                );
+            }
+
+            // Fire up scanner
+            html5QrScanner.render(onScanSuccess, onScanError);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Fill target fields
+            upcField.value = decodedText;
+            
+            // Provide gentle haptic buzz feedback on mobile if supported
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+
+            // Close scanner layout cleanly
+            closeScanner();
+        }
+
+        function onScanError(err) {
+            // Silently ignore standard camera frame analysis failures to keep performance clean
+        }
+
+        function closeScanner() {
+            if (html5QrScanner) {
+                html5QrScanner.clear().then(() => {
+                    document.getElementById('scanner-container').classList.add('hidden');
+                }).catch(error => {
+                    console.error("Failed to clear scanner: ", error);
+                    document.getElementById('scanner-container').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('scanner-container').classList.add('hidden');
+            }
+        }
+
+        // Live Event Listeners
+        boxCostInput.addEventListener('input', calculate);
+        piecesInput.addEventListener('input', calculate);
+        marginSlider.addEventListener('input', calculate);
+    </script>
+</body>
+</html>
