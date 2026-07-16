@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Pedidos Inteligente</title>
+    <!-- Tailwind CSS para diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tesseract.js para OCR -->
+    <script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans pb-24 text-gray-800">
+
+    <!-- Encabezado -->
+    <header class="bg-blue-600 text-white p-4 sticky top-0 shadow-md z-10 flex justify-between items-center">
+        <h1 class="text-xl font-bold">Mi Tienda Inteligente</h1>
+        <span id="badge-total" class="bg-yellow-400 text-blue-900 font-bold text-xs px-2.5 py-1 rounded-full">0 Prod.</span>
+    </header>
+
+    <!-- Alerta de modo local (Solo se muestra si localStorage está bloqueado) -->
+    <div id="alerta-local" class="hidden bg-yellow-100 border-b border-yellow-300 text-yellow-800 p-3 text-xs text-center font-semibold">
+        ⚠️ Estás abriendo el archivo directamente. Para guardar tus productos de forma permanente, súbelo a un servidor web o usa GitHub Pages.
+    </div>
+
+    <!-- Contenedor Principal -->
+    <main class="p-4 max-w-md mx-auto">
+        
+        <!-- ================= SECCIÓN: INVENTARIO ================= -->
+        <section id="sec-inventario" class="space-y-4">
+            <div class="flex gap-2">
+                <input type="text" id="buscar" placeholder="Buscar por nombre o UPC..." class="w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div id="lista-productos" class="space-y-3"></div>
+        </section>
+
+        <!-- ================= SECCIÓN: AGREGAR / ESCANEAR PRODUCTO ================= -->
+        <section id="sec-agregar" class="hidden space-y-4 bg-white p-5 rounded-xl shadow-md">
+            <h2 class="text-lg font-bold border-b pb-2 text-gray-700">Escanear y Registrar</h2>
+            
+            <!-- Botón de Cámara/Galería -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Foto de la Ficha o Pantalla</label>
+                <div class="flex flex-col gap-2">
+                    <label class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg flex items-center gap-2 w-full justify-center shadow-sm font-bold transition-colors">
+                        <span>📸 Seleccionar Foto o Captura</span>
+                        <input type="file" id="foto-input" accept="image/*" class="hidden">
+                    </label>
+                    <p class="text-xs text-gray-400 text-center">Selecciona una captura para extraer datos e imagen automáticamente.</p>
+                </div>
+                
+                <!-- Estado del Escaneo por IA -->
+                <div id="ocr-status" class="hidden mt-3 p-3 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold text-center">
+                    Procesando imagen con IA... Leyendo datos...
+                </div>
+
+                <!-- Previsualización del Recorte Automático -->
+                <div id="preview-container" class="mt-3 hidden flex-col items-center gap-1">
+                    <p class="text-xs font-bold text-gray-500">Foto del producto recortada:</p>
+                    <img id="foto-preview" class="w-28 h-28 object-contain rounded-lg border shadow-sm bg-white">
+                </div>
+            </div>
+
+            <hr class="border-gray-200">
+
+            <!-- Formulario -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Nombre del Producto</label>
+                <input type="text" id="nombre" placeholder="Ej. LIBBY'S Corned Beef" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none font-semibold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Código UPC</label>
+                    <input type="text" id="upc" placeholder="UPC" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Empaque (Pack)</label>
+                    <input type="number" id="pack" value="1" oninput="calcularUnitario()" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Sección de Precios de Caja -->
+            <div class="grid grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg border">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Precio Caja Reg. ($)</label>
+                    <input type="number" step="0.01" id="precio-caja" placeholder="0.00" oninput="calcularUnitario()" class="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-red-500 mb-1">Precio Caja Oferta ($)</label>
+                    <input type="number" step="0.01" id="precio-caja-oferta" placeholder="0.00" oninput="calcularUnitario()" class="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-red-600 font-semibold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Costo Unit. Calc. ($)</label>
+                    <input type="number" step="0.01" id="precio-compra" placeholder="0.00" class="w-full p-2.5 border rounded-lg bg-gray-100 font-bold text-blue-600" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Sugerido Venta (SRP) ($)</label>
+                    <input type="number" step="0.01" id="precio-venta" placeholder="0.00" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none font-bold text-green-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Stock Actual</label>
+                    <input type="number" id="stock" value="0" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Distribuidor</label>
+                    <input type="text" id="proveedor" placeholder="Ej. Krasdale" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+            </div>
+
+            <button onclick="guardarProducto()" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold hover:bg-green-700 transition">
+                Guardar en Inventario
+            </button>
+        </section>
+
+        <!-- ================= SECCIÓN: LISTA DE COMPRAS ================= -->
+        <section id="sec-orden" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-xl shadow-md space-y-4">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h2 class="text-lg font-bold text-gray-700">Orden de Pedido</h2>
+                    <button onclick="limpiarOrdenCompleta()" class="text-red-500 text-sm font-semibold hover:underline">Vaciar Lista</button>
+                </div>
+                
+                <div id="lista-orden" class="space-y-3 divide-y divide-gray-100"></div>
+
+                <div class="pt-4 border-t space-y-2">
+                    <div class="flex justify-between font-bold text-lg">
+                        <span>Total Pedido:</span>
+                        <span id="total-pedido" class="text-blue-600">$0.00</span>
+                    </div>
+                    <button onclick="enviarPedidoWhatsApp()" class="w-full bg-green-500 text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2 hover:bg-green-600 transition">
+                        <span>💬 Enviar Pedido por WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Menú Inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg flex justify-around py-3 z-10 max-w-md mx-auto">
+        <button onclick="switchTab('inventario')" id="btn-tab-inventario" class="flex flex-col items-center text-blue-600">
+            <span class="text-xl">📦</span>
+            <span class="text-xs font-semibold">Productos</span>
+        </button>
+        <button onclick="switchTab('agregar')" id="btn-tab-agregar" class="flex flex-col items-center text-gray-500">
+            <span class="text-xl">➕</span>
+            <span class="text-xs font-semibold">Agregar</span>
+        </button>
+        <button onclick="switchTab('orden')" id="btn-tab-orden" class="flex flex-col items-center text-gray-500 relative">
+            <span class="text-xl">🛒</span>
+            <span class="text-xs font-semibold">Hacer Pedido</span>
+            <span id="orden-badge" class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+        </button>
+    </nav>
+
+    <script>
+        // Intentar leer de LocalStorage de manera segura para evitar crasheos bajo content:// o file://
+        let productos = [];
+        let orden = {};
+        let fotoDataUrl = "";
+        let storageDisponible = true;
+
+        try {
+            productos = JSON.parse(localStorage.getItem('inventario_tienda')) || [];
+            orden = JSON.parse(localStorage.getItem('orden_tienda')) || {};
+        } catch (e) {
+            console.warn("LocalStorage no está disponible. Se usará la memoria temporal de la sesión.");
+            storageDisponible = false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!storageDisponible) {
+                document.getElementById('alerta-local').classList.remove('hidden');
+            }
+            renderInventario();
+            actualizarBadges();
+
+            document.getElementById('foto-input').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    procesarFotoEInteligencia(file);
+                }
+            });
+
+            document.getElementById('buscar').addEventListener('input', renderInventario);
+        });
+
+        function switchTab(tab) {
+            document.getElementById('sec-inventario').classList.add('hidden');
+            document.getElementById('sec-agregar').classList.add('hidden');
+            document.getElementById('sec-orden').classList.add('hidden');
+            
+            document.getElementById('btn-tab-inventario').className = 'flex flex-col items-center text-gray-500';
+            document.getElementById('btn-tab-agregar').className = 'flex flex-col items-center text-gray-500';
+            document.getElementById('btn-tab-orden').className = 'flex flex-col items-center text-gray-500 relative';
+
+            if(tab === 'inventario') {
+                document.getElementById('sec-inventario').classList.remove('hidden');
+                document.getElementById('btn-tab-inventario').className = 'flex flex-col items-center text-blue-600';
+                renderInventario();
+            } else if(tab === 'agregar') {
+                document.getElementById('sec-agregar').classList.remove('hidden');
+                document.getElementById('btn-tab-agregar').className = 'flex flex-col items-center text-blue-600';
+            } else if(tab === 'orden') {
+                document.getElementById('sec-orden').classList.remove('hidden');
+                document.getElementById('btn-tab-orden').className = 'flex flex-col items-center text-blue-600 relative';
+                renderOrden();
+            }
+        }
+
+        function calcularUnitario() {
+            const pack = parseInt(document.getElementById('pack').value) || 1;
+            const precioCaja = parseFloat(document.getElementById('precio-caja').value) || 0;
+            const precioCajaOferta = parseFloat(document.getElementById('precio-caja-oferta').value) || 0;
+            
+            let costoEfectivoCaja = precioCaja;
+            if (precioCajaOferta > 0) {
+                costoEfectivoCaja = precioCajaOferta;
+            }
+
+            if (costoEfectivoCaja > 0 && pack > 0) {
+                const unitario = parseFloat((costoEfectivoCaja / pack).toFixed(2));
+                document.getElementById('precio-compra').value = unitario;
+            } else {
+                document.getElementById('precio-compra').value = '';
+            }
+        }
+
+        function procesarFotoEInteligencia(file) {
+            const statusDiv = document.getElementById('ocr-status');
+            statusDiv.className = "mt-3 p-3 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold text-center animate-pulse";
+            statusDiv.innerText = "⏳ Recortando foto y leyendo datos con IA...";
+            statusDiv.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function() {
+                    
+                    try {
+                        const cropCanvas = document.createElement('canvas');
+                        const cropCtx = cropCanvas.getContext('2d');
+                        
+                        const cropX = img.width * 0.01;
+                        const cropY = img.height * 0.15;
+                        const cropW = img.width * 0.24;
+                        const cropH = img.height * 0.11;
+
+                        cropCanvas.width = cropW;
+                        cropCanvas.height = cropH;
+                        
+                        cropCtx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+                        fotoDataUrl = cropCanvas.toDataURL('image/jpeg', 0.8);
+                        
+                        document.getElementById('foto-preview').src = fotoDataUrl;
+                        document.getElementById('preview-container').classList.remove('hidden');
+                        document.getElementById('preview-container').classList.add('flex');
+                    } catch (err) {
+                        console.error("Error al recortar la imagen: ", err);
+                    }
+
+                    // --- EJECUTAR IA OCR CON PROTECCIÓN DE PROTOCOLO ---
+                    if (typeof Tesseract === 'undefined') {
+                        statusDiv.className = "mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-xs font-semibold text-center";
+                        statusDiv.innerText = "⚠️ La librería de IA está bloqueada por seguridad local. Ingresa los datos manualmente.";
+                        return;
+                    }
+
+                    Tesseract.recognize(
+                        img.src,
+                        'eng', 
+                        { logger: m => console.log(m) }
+                    ).then(({ data: { text } }) => {
+                        analizarTextoOCR(text);
+                        statusDiv.className = "mt-3 p-3 bg-green-50 text-green-700 rounded-lg text-xs font-semibold text-center";
+                        statusDiv.innerText = "✅ ¡Datos e imagen copiados!";
+                        setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                    }).catch(err => {
+                        console.error("Error OCR: ", err);
+                        statusDiv.className = "mt-3 p-3 bg-yellow-50 text-yellow-700 rounded-lg text-xs font-semibold text-center";
+                        statusDiv.innerText = "⚠️ Error de lectura. Se guardó el recorte de foto, completa el texto a mano.";
+                    });
+                }
+            }
+        }
+
+        function analizarTextoOCR(texto) {
+            const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            let upcDectectado = "";
+            let nombreDetectado = "";
+            let precioCaja = 0;
+            let precioCajaOferta = 0;
+            let pack = 1;
+            let sugeridoVenta = 0;
+            let distribuidor = "General";
+
+            if (texto.toUpperCase().includes("KRASDALE")) {
+                distribuidor = "Krasdale";
+            }
+
+            lineas.forEach(linea => {
+                const cleanLinea = linea.toUpperCase().replace(/\s+/g, ' ');
+
+                if (cleanLinea.includes("UPC:")) {
+                    const match = cleanLinea.match(/UPC:\s*(\d+)/);
+                    if (match) upcDectectado = match[1];
+                } else {
+                    const matchDirecto = cleanLinea.match(/\b\d{10,12}\b/);
+                    if (matchDirecto && !upcDectectado) upcDectectado = matchDirecto[0];
+                }
+
+                if (cleanLinea.includes("SRP")) {
+                    const match = cleanLinea.match(/SRP[:|\s]*\d*[\/|\$]*\s*\$?\s*(\d+\.\d{2})/i);
+                    if (match) sugeridoVenta = parseFloat(match[1]);
+                }
+
+                if (cleanLinea.includes("CASE COST")) {
+                    const match = cleanLinea.match(/CASE\s*COST[:|\s]*\$?\s*(\d+\.\d{2})/i);
+                    if (match) precioCaja = parseFloat(match[1]);
+                }
+
+                if (cleanLinea.includes("SHOW NET")) {
+                    const match = cleanLinea.match(/SHOW\s*NET[:|\s]*\$?\s*(\d+\.\d{2})/i);
+                    if (match) precioCajaOferta = parseFloat(match[1]);
+                } else if (cleanLinea.includes("SHOW DEAL")) {
+                    const match = cleanLinea.match(/SHOW\s*DEAL[:|\s]*\$?\s*(\d+\.\d{2})/i);
+                    if (match) precioCajaOferta = parseFloat(match[1]);
+                }
+
+                if (cleanLinea.includes("PACK:")) {
+                    const match = cleanLinea.match(/PACK[:|\s]*(\d+)/i);
+                    if (match) pack = parseInt(match[1]) || 1;
+                }
+            });
+
+            for(let i = 0; i < lineas.length; i++) {
+                const l = lineas[i].toUpperCase();
+                if (l.includes("KRASDALE") || l.includes("TRADESHOW") || l.includes("DELIVERY") || l.includes("CONTINUE")) {
+                    continue;
+                }
+                if (lineas[i].match(/[a-zA-Z]/) && !l.includes(":") && !l.includes("@")) {
+                    nombreDetectado = lineas[i];
+                    break;
+                }
+            }
+
+            if (nombreDetectado) document.getElementById('nombre').value = nombreDetectado;
+            if (upcDectectado) document.getElementById('upc').value = upcDectectado;
+            document.getElementById('pack').value = pack;
+            if (precioCaja > 0) document.getElementById('precio-caja').value = precioCaja;
+            if (precioCajaOferta > 0) document.getElementById('precio-caja-oferta').value = precioCajaOferta;
+            if (sugeridoVenta > 0) document.getElementById('precio-venta').value = sugeridoVenta;
+            document.getElementById('proveedor').value = distribuidor;
+
+            calcularUnitario();
+        }
+
+        function guardarProducto() {
+            const upc = document.getElementById('upc').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
+            const precioCompra = parseFloat(document.getElementById('precio-compra').value) || 0;
+            const precioVenta = parseFloat(document.getElementById('precio-venta').value) || 0;
+            const precioCaja = parseFloat(document.getElementById('precio-caja').value) || 0;
+            const precioCajaOferta = parseFloat(document.getElementById('precio-caja-oferta').value) || 0;
+            const pack = parseInt(document.getElementById('pack').value) || 1;
+            const stock = parseInt(document.getElementById('stock').value) || 0;
+            const proveedor = document.getElementById('proveedor').value.trim();
+
+            if (!nombre) {
+                alert("Por favor, ingresa el nombre del producto.");
+                return;
+            }
+
+            const nuevoProducto = {
+                upc: upc || 'SIN-UPC-' + Date.now(),
+                nombre,
+                precioCompra,
+                precioVenta,
+                precioCaja,
+                precioCajaOferta,
+                pack,
+                stock,
+                proveedor: proveedor || 'General',
+                foto: fotoDataUrl || 'https://placehold.co/150?text=Sin+Foto'
+            };
+
+            const index = productos.findIndex(p => p.upc === nuevoProducto.upc);
+            if (index !== -1) {
+                if(confirm("Ya existe un producto con este UPC. ¿Deseas actualizarlo?")) {
+                    productos[index] = nuevoProducto;
+                } else {
+                    return;
+                }
+            } else {
+                productos.push(nuevoProducto);
+            }
+
+            if (storageDisponible) {
+                try {
+                    localStorage.setItem('inventario_tienda', JSON.stringify(productos));
+                } catch(e) {}
+            }
+            
+            document.getElementById('upc').value = '';
+            document.getElementById('nombre').value = '';
+            document.getElementById('precio-compra').value = '';
+            document.getElementById('precio-venta').value = '';
+            document.getElementById('precio-caja').value = '';
+            document.getElementById('precio-caja-oferta').value = '';
+            document.getElementById('pack').value = '1';
+            document.getElementById('stock').value = '0';
+            document.getElementById('proveedor').value = '';
+            document.getElementById('foto-input').value = '';
+            document.getElementById('preview-container').classList.add('hidden');
+            fotoDataUrl = "";
+
+            alert("Producto guardado correctamente.");
+            actualizarBadges();
+            switchTab('inventario');
+        }
+
+        function renderInventario() {
+            const query = document.getElementById('buscar').value.toLowerCase();
+            const container = document.getElementById('lista-productos');
+            container.innerHTML = '';
+
+            const filtrados = productos.filter(p => 
+                p.nombre.toLowerCase().includes(query) || 
+                p.upc.toLowerCase().includes(query)
+            );
+
+            if (filtrados.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-8">No se encontraron productos.</p>`;
+                return;
+            }
+
+            filtrados.forEach(p => {
+                const margen = p.precioVenta > 0 ? (((p.precioVenta - p.precioCompra) / p.precioVenta) * 100).toFixed(0) : 0;
+                const enOrden = orden[p.upc] || 0;
+                
+                const textoOfertaCaja = p.precioCajaOferta > 0 
+                    ? `<span class="text-red-500 line-through">$${p.precioCaja.toFixed(2)}</span> <span class="text-green-600 font-bold">$${p.precioCajaOferta.toFixed(2)}</span>` 
+                    : `<span>$${p.precioCaja.toFixed(2)}</span>`;
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl shadow-sm flex gap-3 items-center border border-gray-100";
+                card.innerHTML = `
+                    <img src="${p.foto}" class="w-16 h-16 object-contain rounded-lg border flex-shrink-0 bg-white p-1">
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-bold text-gray-800 truncate text-sm">${p.nombre}</h3>
+                        <p class="text-xs text-gray-400 truncate">UPC: ${p.upc} | Pack: ${p.pack}</p>
+                        <div class="flex gap-2 mt-1 text-[11px]">
+                            <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Stock: <b>${p.stock}</b></span>
+                            <span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Ganancia: <b>${margen}%</b></span>
+                        </div>
+                        <div class="text-[11px] text-gray-500 mt-1">
+                            Caja: ${textoOfertaCaja} | Unit: <b>$${p.precioCompra.toFixed(2)}</b>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                        <button onclick="agregarAOrden('${p.upc}')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold p-2 rounded-lg text-xs flex items-center gap-1 transition">
+                            🛒 Pedir ${enOrden > 0 ? `(${enOrden})` : ''}
+                        </button>
+                        <button onclick="eliminarProducto('${p.upc}')" class="text-gray-300 hover:text-red-500 p-1 text-xs transition">
+                            ✕
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function agregarAOrden(upc) {
+            orden[upc] = (orden[upc] || 0) + 1;
+            guardarOrden();
+            renderInventario();
+        }
+
+        function guardarOrden() {
+            if (storageDisponible) {
+                try {
+                    localStorage.setItem('orden_tienda', JSON.stringify(orden));
+                } catch(e) {}
+            }
+            actualizarBadges();
+        }
+
+        function actualizarBadges() {
+            document.getElementById('badge-total').innerText = `${productos.length} Prod.`;
+            const totalItemsEnOrden = Object.values(orden).reduce((a, b) => a + b, 0);
+            const ordenBadge = document.getElementById('orden-badge');
+            if(totalItemsEnOrden > 0) {
+                ordenBadge.innerText = totalItemsEnOrden;
+                ordenBadge.classList.remove('hidden');
+            } else {
+                ordenBadge.classList.add('hidden');
+            }
+        }
+
+        function renderOrden() {
+            const container = document.getElementById('lista-orden');
+            container.innerHTML = '';
+            let totalAcumulado = 0;
+
+            const items = Object.entries(orden);
+            if(items.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-6">No has añadido productos para pedir.</p>`;
+                document.getElementById('total-pedido').innerText = "$0.00";
+                return;
+            }
+
+            items.forEach(([upc, cantidad]) => {
+                const prod = productos.find(p => p.upc === upc);
+                if(!prod) return;
+
+                const subtotal = prod.precioCompra * cantidad;
+                totalAcumulado += subtotal;
+
+                const itemRow = document.createElement('div');
+                itemRow.className = "flex gap-3 py-3 items-center";
+                itemRow.innerHTML = `
+                    <img src="${prod.foto}" class="w-12 h-12 object-contain rounded-md border flex-shrink-0 bg-white">
+                    <div class="flex-grow min-w-0">
+                        <h4 class="font-bold text-sm text-gray-800 truncate">${prod.nombre}</h4>
+                        <p class="text-xs text-gray-500">Costo Unit.: $${prod.precioCompra.toFixed(2)}</p>
+                        <p class="text-xs font-semibold text-blue-600">Subtotal: $${subtotal.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="ajustarCantidad('${upc}', -1)" class="bg-gray-200 text-gray-700 px-2.5 py-1 rounded font-bold hover:bg-gray-300">-</button>
+                        <span class="w-8 text-center font-bold text-sm">${cantidad}</span>
+                        <button onclick="ajustarCantidad('${upc}', 1)" class="bg-gray-200 text-gray-700 px-2.5 py-1 rounded font-bold hover:bg-gray-300">+</button>
+                    </div>
+                `;
+                container.appendChild(itemRow);
+            });
+
+            document.getElementById('total-pedido').innerText = `$${totalAcumulado.toFixed(2)}`;
+        }
+
+        function ajustarCantidad(upc, cambio) {
+            if(orden[upc]) {
+                orden[upc] += cambio;
+                if(orden[upc] <= 0) delete orden[upc];
+                guardarOrden();
+                renderOrden();
+            }
+        }
+
+        function limpiarOrdenCompleta() {
+            if(confirm("¿Estás seguro de que quieres borrar toda la lista de pedido?")) {
+                orden = {};
+                guardarOrden();
+                renderOrden();
+            }
+        }
+
+        function eliminarProducto(upc) {
+            if(confirm("¿Estás seguro de que deseas eliminar permanentemente este producto del inventario?")) {
+                productos = productos.filter(p => p.upc !== upc);
+                if(orden[upc]) delete orden[upc];
+                if (storageDisponible) {
+                    try {
+                        localStorage.setItem('inventario_tienda', JSON.stringify(productos));
+                    } catch(e) {}
+                }
+                guardarOrden();
+                renderInventario();
+            }
+        }
+
+        function enviarPedidoWhatsApp() {
+            const items = Object.entries(orden);
+            if(items.length === 0) {
+                alert("Tu lista de pedido está vacía.");
+                return;
+            }
+
+            let mensaje = `📝 *NUEVO PEDIDO DE COMPRA*\n-----------------------------\n`;
+            let total = 0;
+
+            items.forEach(([upc, cantidad]) => {
+                const prod = productos.find(p => p.upc === upc);
+                if(prod) {
+                    const subtotal = prod.precioCompra * cantidad;
+                    total += subtotal;
+                    mensaje += `• *${prod.nombre}*\n  Cant: ${cantidad} | UPC: ${prod.upc}\n  Costo Unit.: $${prod.precioCompra.toFixed(2)} | Sub: $${subtotal.toFixed(2)}\n\n`;
+                }
+            });
+
+            mensaje += `-----------------------------\n💰 *TOTAL ESTIMADO:* $${total.toFixed(2)}`;
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
